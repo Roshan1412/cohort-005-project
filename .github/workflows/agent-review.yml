@@ -160,7 +160,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-            - name: Install GitHub Copilot CLI
+      - name: Configure pre-commit hook
+        run: git config core.hooksPath .husky
+
+      - name: Install GitHub Copilot CLI
         run: npm install -g @github/copilot
 
       - name: Migrate and seed the database
@@ -176,9 +179,8 @@ jobs:
           git config user.name "agent-factory[bot]"
           git config user.email "agent-factory[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
-          # `npm ci` ran husky, which points git at .husky/_. If it did not,
-          # the agent's commits would skip the hook without anyone noticing.
-          if [ "$(git config core.hooksPath)" != ".husky/_" ]; then
+          # Fail if the checked-in hook is not configured.
+          if [ "$(git config core.hooksPath)" != ".husky" ]; then
             echo "::error::The pre-commit hook is not installed (core.hooksPath is '$(git config core.hooksPath)')."
             exit 1
           fi
